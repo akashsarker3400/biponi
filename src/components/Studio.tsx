@@ -17,7 +17,7 @@ export function Studio() {
   const [border, setBorder] = useState(0)
   const [motif, setMotif] = useState<Motif>('jamdani')
   const [zari, setZari] = useState(0)
-  const [view, setView] = useState<'flat' | 'hang' | '3d'>('3d')
+  const [view, setView] = useState<'flat' | 'hang' | '3d'>(() => (window.matchMedia('(pointer: coarse)').matches ? 'flat' : '3d'))
   const addRef = useRef<HTMLButtonElement>(null)
 
   const w = WEAVES[weave]

@@ -8,7 +8,7 @@ import { NEW_ARRIVALS } from '../catalog'
 import { scrollToId } from './ui'
 
 export const LINKS = [
-  { id: 'seasons', name: L('Seasons', 'ঋতু') },
+  { id: 'walk', name: L('Walk in', 'দোকানে ঢুকুন') },
   { id: 'drape', name: L('Touch it · 3D', 'ছুঁয়ে দেখুন') },
   { id: 'studio', name: L('Weave Studio', 'তাঁত স্টুডিও') },
   { id: 'arrivals', name: L('New', 'নতুন') },

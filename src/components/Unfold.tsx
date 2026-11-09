@@ -31,7 +31,7 @@ export function Unfold() {
   const { t, num } = useLang()
   const ref = useRef<HTMLElement>(null)
   const [li, setLi] = useState(0)
-  const [yd, setYd] = useState(0)
+  const ydRef = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
   const p = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 })
   const reveal = useTransform(p, [0.04, 0.92], [0, 100])
@@ -40,7 +40,9 @@ export function Unfold() {
   const rollScale = useTransform(reveal, [0, 100], [1, 0.35])
   const tilt = useTransform(p, [0, 0.5, 1], [28, 14, 8])
   const lift = useTransform(p, [0.92, 1], [0, -12])
-  useMotionValueEvent(reveal, 'change', (v) => setYd(Math.round((v / 100) * 60) / 10))
+  useMotionValueEvent(reveal, 'change', (v) => {
+    if (ydRef.current) ydRef.current.textContent = num(Math.round((v / 100) * 60) / 10)
+  })
   const look = LOOKS[li].look
 
   return (
@@ -87,7 +89,7 @@ export function Unfold() {
             ))}
           </div>
           <p className="uf-count">
-            <b>{num(yd)}</b> {t(L('of 6 yards', '/ ৬ গজ'))}
+            <b ref={ydRef}>{num(0)}</b> {t(L('of 6 yards', '/ ৬ গজ'))}
           </p>
         </div>
       </div>

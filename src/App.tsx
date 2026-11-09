@@ -3,6 +3,7 @@ import { MotionConfig } from 'motion/react'
 import { useCallback, useEffect, useState } from 'react'
 import { Bridal, Lookbook } from './components/Bridal'
 import { Drape } from './components/Drape'
+import { ShopWalk } from './components/ShopWalk'
 import { ZariCursor } from './components/ZariCursor'
 import { Cursor } from './components/Cursor'
 import { Checkout } from './components/Checkout'
@@ -70,6 +71,7 @@ export default function App() {
             <Hero ready={!loading} />
             <Ticker />
             <Trust />
+            <ShopWalk />
             <Seasons />
             <Arrivals />
             <Drape />

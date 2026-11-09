@@ -203,6 +203,7 @@ class ClothSim {
         if (j < SY - 1) link(id(i, j), id(i, j + 2))
       }
   }
+  iters = 14
   step(dt: number, wind: THREE.Vector3, normals: ArrayLike<number>, t: number, grab: number, target: THREE.Vector3 | null) {
     const { p, q, pin, n } = this
     const g = -5.2
@@ -230,7 +231,7 @@ class ClothSim {
       p[grab * 3 + 2] = target.z
     }
     const { a, b, rest } = this
-    for (let it = 0; it < 14; it++) {
+    for (let it = 0; it < this.iters; it++) {
       for (let c = 0; c < a.length; c++) {
         const i1 = a[c] * 3
         const i2 = b[c] * 3
@@ -277,8 +278,10 @@ export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, 
 
   useEffect(() => {
     const el = host.current!
-    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true })
-    renderer.setPixelRatio(Math.min(2, window.devicePixelRatio))
+    // phones: lower resolution + cheaper physics so scrolling stays smooth
+    const lite = window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 760
+    const renderer = new THREE.WebGLRenderer({ antialias: !lite, alpha: true, powerPreference: lite ? 'low-power' : 'high-performance' })
+    renderer.setPixelRatio(Math.min(lite ? 1.25 : 2, window.devicePixelRatio))
     renderer.outputColorSpace = THREE.SRGBColorSpace
     renderer.toneMapping = THREE.NeutralToneMapping
     renderer.toneMappingExposure = 1.05
@@ -319,6 +322,7 @@ export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, 
 
     // cloth
     const sim = new ClothSim()
+    if (lite) sim.iters = 7
     const geo = new THREE.PlaneGeometry(WIDTH, HEIGHT, SX, SY)
     const posAttr = geo.attributes.position as THREE.BufferAttribute
     posAttr.setUsage(THREE.DynamicDrawUsage)
@@ -478,7 +482,7 @@ export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, 
       gustV *= 0.96
       windVec.set(Math.sin(t * 0.45) * 1.4 + Math.sin(t * 1.3) * 0.4, 0, base + gustV)
       const normals = geo.attributes.normal.array
-      const sub = 2
+      const sub = lite ? 1 : 2
       for (let s = 0; s < sub; s++) sim.step(dt / sub, windVec, normals, t, grab, grab >= 0 ? target : null)
       posAttr.array.set(sim.p)
       posAttr.needsUpdate = true

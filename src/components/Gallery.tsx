@@ -38,18 +38,24 @@ export function Ring() {
     setFront(idx)
   })
 
-  // slow idle drift
+  // slow idle drift, only while the ring is on screen
   useEffect(() => {
     let raf = 0
     let prev = performance.now()
+    let seen = false
+    const io = new IntersectionObserver(([en]) => (seen = en.isIntersecting))
+    if (stage.current) io.observe(stage.current)
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick)
-      const dt = (now - prev) / 1000
+      const dt = Math.min(0.05, (now - prev) / 1000)
       prev = now
-      if (auto.current && !drag.current) rot.set(rot.get() - dt * 4)
+      if (seen && auto.current && !drag.current) rot.set(rot.get() - dt * 4)
     }
     raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
+    return () => {
+      cancelAnimationFrame(raf)
+      io.disconnect()
+    }
   }, [rot])
 
   // wheel / trackpad sideways turns the ring
