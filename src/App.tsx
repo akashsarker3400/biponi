@@ -11,9 +11,9 @@ import { QuickView } from './components/QuickView'
 import { Arrivals } from './components/Arrivals'
 import { Accordion, Ring } from './components/Gallery'
 import { Track } from './components/Track'
-import { Unfold } from './components/Unfold'
 import { Hero, Ticker, Trust } from './components/Hero'
 import { Search } from './components/Search'
+import { Fps } from './components/Fps'
 import { TabBar } from './components/TabBar'
 import { Looms } from './components/Looms'
 import { Nav, Preloader } from './components/Nav'
@@ -37,6 +37,8 @@ export default function App() {
   const end = useCallback(() => setCurtain(false), [])
 
   useEffect(() => {
+    // phones/tablets: native scrolling is smoothest, so no Lenis there
+    if (!window.matchMedia('(pointer: fine)').matches) return
     const lenis = new Lenis({ duration: 1.15, smoothWheel: true })
     scroller.lenis = lenis
     let raf = 0
@@ -75,7 +77,6 @@ export default function App() {
             <Seasons />
             <Arrivals />
             <Drape />
-            <Unfold />
             <Studio />
             <Picks />
             <Ring />
@@ -92,6 +93,7 @@ export default function App() {
           <QuickView />
           <Search />
           <TabBar />
+          <Fps />
           <Track />
           <Overlays />
         </StoreProvider>

@@ -95,7 +95,7 @@ export function Footer() {
               <h4>{t(L('Help', 'সহায়তা'))}</h4>
               <button onClick={() => ops.openTrack('')}>{t(L('Track your order', 'অর্ডার ট্র্যাক করুন'))}</button>
               <button onClick={() => scrollToId('visit')}>{t(L('Delivery & returns', 'ডেলিভারি ও রিটার্ন'))}</button>
-              <button onClick={() => scrollToId('unfold')}>{t(L('Saree care & parts', 'শাড়ির যত্ন ও অংশ'))}</button>
+              <button onClick={() => scrollToId('drape')}>{t(L('Touch a saree in 3D', 'থ্রিডিতে শাড়ি ছুঁয়ে দেখুন'))}</button>
               <button onClick={() => scrollToId('studio')}>{t(L('Made-to-order sarees', 'অর্ডারে বোনা শাড়ি'))}</button>
               <button onClick={() => scrollToId('bridal')}>{t(L('Bridal appointments', 'বিয়ের শাড়ির অ্যাপয়েন্টমেন্ট'))}</button>
             </div>

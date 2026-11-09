@@ -24,7 +24,7 @@ npm run build    # production build in dist/
 - **Silk curtain intro**: a red-gold paisley silk curtain gathers aside to reveal the site
 - **Touch the saree (3D)**: real cloth physics in three.js. Grab and pull the fabric, the fan makes it sway, light moods (daylight / lamplight / Pujo pandal), metallic zari that glints, and **blow into the mic** to make the anchol fly
 - **Weave Studio 3D**: the customer's own design shown live as 3D fabric
-- **Six-yard unroll**: scroll and the saree unrolls, labelling kuchi, jomin, paar, anchol and jhalor
+- **Walk into the shop**: scroll-driven walk through real shop photos; each room opens through a gold arch doorway, with tappable hotspots on sarees. The shop photos are stock images in `src/components/ShopWalk.tsx`: replace them with photos of your real showroom.
 - **Weave lens**: in the saree detail, hover to magnify the threads ×3.4
 - **Zari cursor**: a gold thread follows the mouse (desktop)
 - **Silk ripple**: photos ripple like fabric on hover
@@ -32,7 +32,7 @@ npm run build    # production build in dist/
 The 3D engine (`src/components/Cloth3D.tsx`) is lazy-loaded, so the first page load stays fast.
 
 ## Sections
-1. **Hero**: photo slideshow, Bangla/English headline, gold ticker
+1. **Hero**: full-length models in a gold arch, floating product card, rotating seal, Bangla/English headline
 2. **Six seasons (ষড়ঋতু)**: a saree for each Bengali season, in do-chala temple-roof frames
 3. **Weave Studio**: the customer designs their own saree (weave, colours, paar, motif, zari) and the price updates live
 4. **Pick a saree**: tilting 3D cards; + flies the saree into the bag
@@ -55,3 +55,6 @@ The 3D engine (`src/components/Cloth3D.tsx`) is lazy-loaded, so the first page l
 
 ## Not connected yet
 `src/ops.tsx` + the extra data in `src/data.ts` hold an order/stock/coupon engine (auto order ID, delivery charge by district, festival coupons, low-stock alerts). It is written but **not wired into the site yet**.
+
+## Checking performance on a phone
+Open the site with `?fps` (e.g. `https://your-domain/?fps`) to see the frame rate and the current section in the top-left corner.

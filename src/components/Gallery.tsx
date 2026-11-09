@@ -43,13 +43,14 @@ export function Ring() {
     let raf = 0
     let prev = performance.now()
     let seen = false
+    const fine = window.matchMedia('(pointer: fine)').matches
     const io = new IntersectionObserver(([en]) => (seen = en.isIntersecting))
     if (stage.current) io.observe(stage.current)
     const tick = (now: number) => {
       raf = requestAnimationFrame(tick)
       const dt = Math.min(0.05, (now - prev) / 1000)
       prev = now
-      if (seen && auto.current && !drag.current) rot.set(rot.get() - dt * 4)
+      if (fine && seen && auto.current && !drag.current) rot.set(rot.get() - dt * 4)
     }
     raf = requestAnimationFrame(tick)
     return () => {

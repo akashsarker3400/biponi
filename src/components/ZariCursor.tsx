@@ -1,9 +1,11 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /** A golden zari thread that trails the cursor (desktop only). */
 export function ZariCursor() {
   const ref = useRef<HTMLCanvasElement>(null)
+  const [on] = useState(() => window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches)
   useEffect(() => {
+    if (!on) return
     if (!window.matchMedia('(pointer: fine)').matches || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
     const c = ref.current!
     const x = c.getContext('2d')!
@@ -63,6 +65,6 @@ export function ZariCursor() {
       removeEventListener('pointermove', mv)
       removeEventListener('resize', size)
     }
-  }, [])
-  return <canvas ref={ref} className="zari-cursor" aria-hidden />
+  }, [on])
+  return on ? <canvas ref={ref} className="zari-cursor" aria-hidden /> : null
 }

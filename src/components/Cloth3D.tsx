@@ -4,7 +4,8 @@
  * - grab & pull the fabric with mouse / finger
  * - zari is metallic (glints as lights move), silk has sheen
  */
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { L, useLang } from '../i18n'
 import * as THREE from 'three'
 import { RoomEnvironment } from 'three/examples/jsm/environments/RoomEnvironment.js'
 import type { Look, Motif } from '../data'
@@ -272,7 +273,9 @@ class ClothSim {
 /* ------------------------------------------------------------------ */
 export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, onGrab }: { look: Look; mood?: LightMood; wind?: boolean; gust?: number; className?: string; onGrab?: () => void }) {
   const host = useRef<HTMLDivElement>(null)
-  const api = useRef<{ setLook: (l: Look) => void; setMood: (m: LightMood) => void; setWind: (w: boolean) => void; gust: () => void } | null>(null)
+  const api = useRef<{ setLook: (l: Look) => void; setMood: (m: LightMood) => void; setWind: (w: boolean) => void; gust: () => void; wake: () => void } | null>(null)
+  const { t } = useLang()
+  const [asleep, setAsleep] = useState(() => window.matchMedia('(pointer: coarse)').matches || window.innerWidth < 760)
   const grabCb = useRef(onGrab)
   grabCb.current = onGrab
 
@@ -390,6 +393,7 @@ export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, 
       ray.setFromCamera(ndc, camera)
     }
     const down = (e: PointerEvent) => {
+      wake()
       setNdc(e)
       const hit = ray.intersectObject(mesh)[0]
       if (!hit || !hit.face) return
@@ -470,10 +474,34 @@ export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, 
     window.addEventListener('pointermove', onWinMove)
 
     let tick = 0
+    // phones: the cloth sleeps (one still frame) until touched, and dozes off after 10s idle
+    let active = !lite
+    let needDraw = true
+    let lastTouch = performance.now()
+    function wake() {
+      lastTouch = performance.now()
+      if (!active) {
+        active = true
+        setAsleep(false)
+      }
+    }
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame)
       if (!visible) {
         prev = now
+        return
+      }
+      if (!active) {
+        if (needDraw) {
+          renderer.render(scene, camera)
+          needDraw = false
+        }
+        prev = now
+        return
+      }
+      if (lite && grab < 0 && now - lastTouch > 10000) {
+        active = false
+        setAsleep(true)
         return
       }
       // phones: simulate + draw every other frame (30 fps) to keep scrolling fluid
@@ -507,13 +535,19 @@ export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, 
       setLook: (l) => {
         setLook(l)
         gustV = 2.6
+        needDraw = true
       },
-      setMood,
+      setMood: (m) => {
+        setMood(m)
+        needDraw = true
+      },
+      wake,
       setWind: (w) => {
         windOn = w
       },
       gust: () => {
         gustV = 7
+        wake()
       },
     }
 
@@ -550,5 +584,13 @@ export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, 
     if (gust) api.current?.gust()
   }, [gust])
 
-  return <div ref={host} className={'cloth3d ' + (className ?? '')} />
+  return (
+    <div ref={host} className={'cloth3d ' + (className ?? '')}>
+      {asleep && (
+        <button className="cloth-wake" onClick={() => api.current?.wake()}>
+          <span>▶</span> {t(L('Tap to bring the saree to life', 'ছুঁয়ে শাড়িটা জাগিয়ে তুলুন'))}
+        </button>
+      )}
+    </div>
+  )
 }
