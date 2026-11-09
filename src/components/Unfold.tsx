@@ -35,9 +35,12 @@ export function Unfold() {
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
   const p = useSpring(scrollYProgress, { stiffness: 140, damping: 30, mass: 0.4 })
   const reveal = useTransform(p, [0.04, 0.92], [0, 100])
-  const clip = useTransform(reveal, (v) => `inset(-40px ${100 - v}% -40px 0)`)
+  // compositor-only reveal: the window slides left while the cloth slides right
+  const winX = useTransform(reveal, (v) => `${v - 100}%`)
+  const clothX = useTransform(reveal, (v) => `${100 - v}%`)
   const rollLeft = useTransform(reveal, (v) => `${v}%`)
   const rollScale = useTransform(reveal, [0, 100], [1, 0.35])
+  const fillScale = useTransform(reveal, [0, 100], [0, 1])
   const tilt = useTransform(p, [0, 0.5, 1], [28, 14, 8])
   const lift = useTransform(p, [0.92, 1], [0, -12])
   useMotionValueEvent(reveal, 'change', (v) => {
@@ -65,23 +68,26 @@ export function Unfold() {
 
         <div className="uf-stage">
           <motion.div className="uf-table" style={{ rotateX: tilt, y: lift }}>
-            <motion.div className="uf-cloth" style={{ clipPath: clip }}>
-              <SareeFlat look={look} />
+            <motion.div className="uf-window" style={{ x: winX }}>
+              <motion.div className="uf-cloth" style={{ x: clothX }}>
+                <SareeFlat look={look} />
+              </motion.div>
             </motion.div>
+            <motion.div className="uf-roll-track" style={{ x: rollLeft }}>
             <motion.div
               className="uf-roll"
               style={{
-                left: rollLeft,
                 scale: rollScale,
                 background: `linear-gradient(90deg, rgba(0,0,0,.45), rgba(255,255,255,.28) 38%, rgba(0,0,0,.05) 55%, rgba(0,0,0,.5)), linear-gradient(180deg, ${look.border} 0 13%, ${look.zari} 13% 15%, ${look.body} 15% 85%, ${look.zari} 85% 87%, ${look.border} 87%)`,
               }}
             />
+            </motion.div>
             {PARTS.map((part) => (
               <Label key={part.name.en} p={p} part={part} />
             ))}
           </motion.div>
           <div className="uf-ruler">
-            <motion.span className="uf-ruler-fill" style={{ width: rollLeft }} />
+            <motion.span className="uf-ruler-fill" style={{ scaleX: fillScale }} />
             {Array.from({ length: 7 }).map((_, k) => (
               <i key={k} style={{ left: `${(k / 6) * 100}%` }}>
                 {num(k)}

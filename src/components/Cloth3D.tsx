@@ -469,13 +469,16 @@ export function Cloth3D({ look, mood = 'day', wind = true, gust = 0, className, 
     }
     window.addEventListener('pointermove', onWinMove)
 
+    let tick = 0
     const frame = (now: number) => {
       raf = requestAnimationFrame(frame)
       if (!visible) {
         prev = now
         return
       }
-      const dt = Math.min(0.033, (now - prev) / 1000)
+      // phones: simulate + draw every other frame (30 fps) to keep scrolling fluid
+      if (lite && tick++ % 2 === 1 && grab < 0) return
+      const dt = Math.min(lite ? 0.05 : 0.033, (now - prev) / 1000)
       prev = now
       t += dt
       const base = windOn && !reduce ? 2.1 + Math.sin(t * 0.7) * 1.1 + Math.sin(t * 1.9) * 0.5 : 0.2

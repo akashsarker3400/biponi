@@ -121,7 +121,7 @@ export function ShopWalk() {
   const unroll = useTransform(p, [0.54, 0.67], [100, 0])
   const clip = useTransform(unroll, (v) => `inset(0 ${v}% 0 0)`)
   const rollX = useTransform(unroll, (v) => `${100 - v}%`)
-  const bar = useTransform(p, [0, 1], ['0%', '100%'])
+  const barS = useTransform(p, [0, 1], [0, 1])
 
   const open = (s: Saree) => openQuick(s.id)
   const hanging = useMemo(() => SAREES.filter((s) => s.group === 'new').slice(0, 6), [])
@@ -179,7 +179,9 @@ export function ShopWalk() {
                 <motion.div className="w-unroll" style={{ clipPath: clip }}>
                   <SareeFlat look={counterSaree.look} />
                 </motion.div>
-                <motion.i className="w-roll" style={{ left: rollX, background: `linear-gradient(90deg, rgba(0,0,0,.4), rgba(255,255,255,.3) 40%, rgba(0,0,0,.45)), ${counterSaree.look.body}` }} />
+                <motion.div className="w-roll-track" style={{ x: rollX }}>
+                  <i className="w-roll" style={{ background: `linear-gradient(90deg, rgba(0,0,0,.4), rgba(255,255,255,.3) 40%, rgba(0,0,0,.45)), ${counterSaree.look.body}` }} />
+                </motion.div>
               </div>
               <button className="w-counter-cta" onClick={() => open(counterSaree)}>
                 {t(counterSaree.name)} →
@@ -234,7 +236,7 @@ export function ShopWalk() {
           <Caption key={c.n} p={p} c={c} />
         ))}
         <div className="walk-progress">
-          <motion.span style={{ height: bar }} />
+          <motion.span style={{ scaleY: barS }} />
         </div>
       </div>
     </section>
