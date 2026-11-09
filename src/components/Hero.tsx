@@ -5,7 +5,7 @@ import { img } from '../data'
 import { L, useLang } from '../i18n'
 import { useStore } from '../store'
 import { IUpRight, LogoMark } from './SareeArt'
-import { ease, scrollToId } from './ui'
+import { ease, scrollToId, useOnScreen } from './ui'
 
 const DUR = 6000
 /** Full-length photos only: they fit the tall arch without cropping faces. */
@@ -17,6 +17,7 @@ export function Hero({ ready }: { ready: boolean }) {
   const [i, setI] = useState(0)
   const [paused, setPaused] = useState(false)
   const ref = useRef<HTMLElement>(null)
+  const visible = useOnScreen(ref)
   const s = SLIDES[i]
   const lite = typeof window !== 'undefined' && document.documentElement.classList.contains('lite')
 
@@ -34,16 +35,16 @@ export function Hero({ ready }: { ready: boolean }) {
   const orbY = useTransform(my, (v) => `${45 + v * 40}%`)
 
   useEffect(() => {
-    if (paused) return
+    if (paused || !visible) return
     const id = setInterval(() => setI((x) => (x + 1) % SLIDES.length), DUR)
     return () => clearInterval(id)
-  }, [paused, i])
+  }, [paused, i, visible])
 
   const lines = lang === 'bn' ? [['বাংলার', 'তাঁতে,'], ['আপনার', 'আঁচলে।']] : [['Draped', 'in'], ['Bengal’s', 'looms.']]
 
   return (
     <section
-      className="hx"
+      className={'hx' + (visible ? '' : ' is-off')}
       id="top"
       ref={ref}
       onPointerMove={(e) => {
@@ -102,7 +103,7 @@ export function Hero({ ready }: { ready: boolean }) {
             {SLIDES.map((x, k) => (
               <button key={x.id} className={'hx-th' + (k === i ? ' on' : '')} onClick={() => setI(k)} aria-label={x.name.en}>
                 <img src={img(x.photo, 160)} alt="" />
-                {k === i && !paused && (
+                {k === i && !paused && visible && (
                   <svg viewBox="0 0 44 44" aria-hidden>
                     <motion.circle cx="22" cy="22" r="20" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: DUR / 1000, ease: 'linear' }} key={i} />
                   </svg>

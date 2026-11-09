@@ -14,6 +14,8 @@ const TABS = [
   { key: 'pick', name: L('Studio picks', 'স্টুডিও বাছাই') },
 ] as const
 
+const touch = typeof window !== 'undefined' && window.matchMedia('(pointer: coarse)').matches
+
 export function SareeCard({ s, k = 0 }: { s: Saree; k?: number }) {
   const { t, taka, num } = useLang()
   const { add, openQuick } = useStore()
@@ -32,7 +34,7 @@ export function SareeCard({ s, k = 0 }: { s: Saree; k?: number }) {
     >
       <div className="sc-img">
         <img className="a" src={img(s.photo, 640)} alt={t(s.name)} loading="lazy" />
-        <img className="b" src={img(s.more?.[0] ?? s.photo, 900)} alt="" loading="lazy" aria-hidden />
+        {!touch && <img className="b" src={img(s.more?.[0] ?? s.photo, 900)} alt="" loading="lazy" aria-hidden />}
         {s.badge && <span className="sc-badge">{t(s.badge)}</span>}
         {left === 0 && <span className="sc-sold">{t(L('Sold out', 'স্টক শেষ'))}</span>}
         {left !== undefined && left > 0 && left <= ops.rules.lowStockAt && <span className="sc-low">{t(L(`Only ${left} left`, `মাত্র ${num(left)}টি`))}</span>}

@@ -301,6 +301,7 @@ function AddedCard() {
 
 export function Overlays() {
   const { flies, toasts } = useStore()
+  const [lite] = useState(() => document.documentElement.classList.contains('lite'))
   const { t } = useLang()
   const { scrollYProgress } = useScroll()
   const sx = useSpring(scrollYProgress, { stiffness: 120, damping: 24 })
@@ -311,9 +312,10 @@ export function Overlays() {
   }
   return (
     <>
-      <motion.div className="progress" style={{ scaleX: sx }} />
+      {/* phones: no scroll-progress bar or back-to-top ring (they redraw every frame) */}
+      {!lite && <motion.div className="progress" style={{ scaleX: sx }} />}
       <AddedCard />
-      <BackTop />
+      {!lite && <BackTop />}
       {flies.map((f) => {
         const to = target()
         return (

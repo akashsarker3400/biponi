@@ -1,6 +1,6 @@
 import { motion, useSpring } from 'motion/react'
 import type Lenis from 'lenis'
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode, type RefObject } from 'react'
 import { useLang, type Txt } from '../i18n'
 import { useStore, type WishItem } from '../store'
 import { IHeart } from './SareeArt'
@@ -121,4 +121,17 @@ export function Tilt({ children, max = 10, className = '', scale = 1.02 }: { chi
       <span className="tilt-glare" />
     </motion.div>
   )
+}
+
+/** true while the element is on (or near) the screen; used to pause off-screen work. */
+export function useOnScreen(ref: RefObject<Element | null>, margin = '100px') {
+  const [on, setOn] = useState(false)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const io = new IntersectionObserver(([e]) => setOn(e.isIntersecting), { rootMargin: margin })
+    io.observe(el)
+    return () => io.disconnect()
+  }, [ref, margin])
+  return on
 }

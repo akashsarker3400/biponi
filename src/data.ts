@@ -13,9 +13,12 @@ export const SHOP = {
 
 /* ---------- Photos (Unsplash, free licence) ---------- */
 const PHONE = typeof window !== 'undefined' && window.matchMedia('(max-width: 760px)').matches
-/** Phones get smaller files: less to download and decode while scrolling. */
+/**
+ * Phones get files sized for how big they are shown: full-screen photos 900px,
+ * everything else 520px. Keeps decoded-image memory low so scrolling stays at 60fps.
+ */
 export const img = (id: string, w = 1200) =>
-  `https://images.unsplash.com/photo-${id}?w=${PHONE ? Math.min(w, 800) : w}&q=${PHONE ? 70 : 75}&auto=format&fit=crop`
+  `https://images.unsplash.com/photo-${id}?w=${PHONE ? (w >= 1100 ? 900 : Math.min(w, 520)) : w}&q=${PHONE ? 68 : 75}&auto=format&fit=crop`
 
 /* ---------- Procedural saree look ---------- */
 export type Motif = 'jamdani' | 'buti' | 'kolka' | 'check' | 'stripe' | 'plain'

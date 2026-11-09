@@ -5,7 +5,7 @@ import { BRIDAL_ALL as BRIDAL, LOOKBOOK_MORE, SAREES } from '../catalog'
 import { L, useLang } from '../i18n'
 import { useStore } from '../store'
 import { IArrow, IArrowL, IBag, IPause, IPlay } from './SareeArt'
-import { HeartBtn, SectionHead, ease, scrollToId } from './ui'
+import { HeartBtn, SectionHead, ease, scrollToId, useOnScreen } from './ui'
 
 export function Bridal() {
   const { t, taka, num } = useLang()
@@ -15,6 +15,8 @@ export function Bridal() {
   const [w, setW] = useState(1200)
   const btn = useRef<HTMLButtonElement>(null)
   const lean = useSpring(0, { stiffness: 60, damping: 14 })
+  const secRef = useRef<HTMLElement>(null)
+  const seen = useOnScreen(secRef)
   const n = BRIDAL.length
   const go = (d: number) => setI((x) => (x + d + n) % n)
 
@@ -25,17 +27,17 @@ export function Bridal() {
     return () => window.removeEventListener('resize', m)
   }, [])
   useEffect(() => {
-    if (paused) return
+    if (paused || !seen) return
     const id = setInterval(() => setI((x) => (x + 1) % n), 4800)
     return () => clearInterval(id)
-  }, [paused, i, n])
+  }, [paused, i, n, seen])
 
   const gap = w < 700 ? 150 : w < 1100 ? 190 : 235
   const b = BRIDAL[i]
   const sale = b.off ? Math.round((b.price * (100 - b.off)) / 100 / 100) * 100 : b.price
 
   return (
-    <section className="section bridal" id="bridal">
+    <section className="section bridal" id="bridal" ref={secRef}>
       <div className="wrap">
         <SectionHead center eyebrow={L('For the gaye holud, the biye, and every vow after', 'গায়ে হলুদ, বিয়ে আর তার পরের প্রতিটি দিনের জন্য')} a={L('The Bridal', 'বিয়ের')} b={L('Collection', 'কালেকশন')} />
       </div>
@@ -103,11 +105,13 @@ export function Lookbook() {
   const { openQuick } = useStore()
   const [i, setI] = useState(0)
   const [play, setPlay] = useState(true)
+  const lbRef = useRef<HTMLElement>(null)
+  const lbSeen = useOnScreen(lbRef)
   useEffect(() => {
-    if (!play) return
+    if (!play || !lbSeen) return
     const id = setInterval(() => setI((x) => (x + 1) % FILM.length), 3800)
     return () => clearInterval(id)
-  }, [play])
+  }, [play, lbSeen])
 
   const col = (list: string[], dir: 'up' | 'down') => (
     <div className={'lb-col ' + dir}>
@@ -121,7 +125,7 @@ export function Lookbook() {
   )
 
   return (
-    <section className="section lookbook" id="lookbook">
+    <section className={'section lookbook' + (lbSeen ? '' : ' is-off')} id="lookbook" ref={lbRef}>
       <div className="wrap">
         <SectionHead center eyebrow={L('Lookbook · Boishakh 1433', 'লুকবুক · বৈশাখ ১৪৩৩')} a={L('Feel the', 'আঁচলের')} b={L('drape.', 'ছোঁয়া।')} />
       </div>
