@@ -33,19 +33,30 @@ const CHAPTERS: { from: number; to: number; n: string; t: Txt; s: Txt }[] = [
 const u = (v: unknown, unit: string) => (typeof v === 'number' ? `${v}${unit}` : String(v ?? `0${unit}`))
 const t3 = (x: number, y: number, z: number, extra = '') => `translate3d(${x}px, ${y}px, ${z}px) ${extra}`
 
-/** Living models on display stands: short silent loops (public/videos). */
-const STANDS: { v: string; id: string; label: Txt }[] = [
-  { v: 'bride', id: 'b1', label: L('Bridal Benarasi', 'বিয়ের বেনারসি') },
-  { v: 'pink', id: 'n7', label: L('Festive silk', 'উৎসবের সিল্ক') },
-  { v: 'drape', id: 'n4', label: L('How it is draped', 'যেভাবে পরানো হয়') },
-  { v: 'red', id: 'p6', label: L('Red with mehndi', 'মেহেদি রাঙা লাল') },
-  { v: 'kuchi', id: 'n11', label: L('The perfect kuchi', 'নিখুঁত কুচি') },
-  { v: 'sisters', id: 'n12', label: L('With the sisters', 'সখীদের সাথে') },
+/**
+ * Real people standing in the shop: short silent loops with the background
+ * cut away (public/models). Sizes are in world px (about 207px to a metre),
+ * so everyone has a believable human height. Clips that end at the knee stand
+ * behind a low display table piled with folded sarees, the way a shop looks.
+ */
+type Model = { v: string; id: string; label: Txt; x: number; z: number; h: number; bottom: number; table: boolean; tableH?: number }
+const MODELS: Model[] = [
+  { v: 'bride', id: 'b1', label: L('Bridal Benarasi', 'বিয়ের বেনারসি'), x: -300, z: -720, h: 250, bottom: FLOOR - 103, table: true },
+  { v: 'blue', id: 'n1', label: L('Rajshahi Katan', 'রাজশাহী কাতান'), x: 290, z: -960, h: 393, bottom: FLOOR + 18, table: false },
+  { v: 'pink', id: 'n7', label: L('Festive silk', 'উৎসবের সিল্ক'), x: -300, z: -1260, h: 330, bottom: FLOOR - 4, table: true, tableH: 96 },
+  { v: 'shop', id: 'n12', label: L('With the sisters', 'সখীদের সাথে'), x: 300, z: -1660, h: 320, bottom: FLOOR - 62, table: true },
+  { v: 'drape', id: 'n4', label: L('How it is draped', 'যেভাবে পরানো হয়'), x: 300, z: -1320, h: 305, bottom: FLOOR - 72, table: true },
 ]
-const standZ = (k: number) => -720 - Math.floor(k / 2) * 420
+const TABLE_H = 140
+/** iPhones, iPads and Safari only play see-through video as HEVC; everyone else gets VP9 WebM. */
+const APPLE =
+  typeof navigator !== 'undefined' &&
+  (/iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ||
+    (/Safari\//.test(navigator.userAgent) && !/Chrome|Chromium|CriOS|Android|Edg|Firefox/.test(navigator.userAgent)))
 
 /** A looping clip that only downloads/decodes while `active` (near the camera). */
-function LoopVideo({ name, active }: { name: string; active: boolean }) {
+function LoopVideo({ src, poster, active }: { src: string; poster: string; active: boolean }) {
   const ref = useRef<HTMLVideoElement>(null)
   useEffect(() => {
     const v = ref.current
@@ -55,7 +66,55 @@ function LoopVideo({ name, active }: { name: string; active: boolean }) {
       v.play().catch(() => {})
     } else v.pause()
   }, [active])
-  return <video ref={ref} src={`/videos/${name}.mp4`} poster={`/videos/${name}.jpg`} muted loop playsInline preload="none" aria-hidden />
+  return <video ref={ref} src={src} poster={poster} muted loop playsInline preload="none" aria-hidden />
+}
+const shopClip = (n: string) => ({ src: `/videos/${n}.mp4`, poster: `/videos/${n}.jpg` })
+const modelClip = (n: string) => ({ src: `/models/${n}.${APPLE ? 'mov' : 'webm'}`, poster: `/models/${n}.webp` })
+
+/** Folded saree stacks on a display table, drawn with gradients (no images). */
+const STACK = ['#B3191F', '#E3A92B', '#1E3A7B', '#E86A7B', '#2E6B3A', '#F2E6CF', '#7A1E2A', '#4B2A7B']
+function Person({ m, active, onOpen }: { m: Model; active: boolean; onOpen: () => void }) {
+  const { t, taka } = useLang()
+  const it = byId(m.id)!
+  const w = Math.round(m.h * 0.5625)
+  const turn = m.x < 0 ? 12 : -12
+  return (
+    <>
+      {/* soft pool of light from the spot above, and the shadow on the floor */}
+      <div className="m-spot" style={{ transform: t3(m.x, FLOOR, m.z - 30) }} />
+      <div className="m-shadow" style={{ transform: t3(m.x, FLOOR, m.z + (m.table ? 40 : 0), 'rotateX(90deg)') }} />
+      <button className="m-person" onClick={onOpen} data-cursor="view" aria-label={`${it.name.en}, ${m.label.en}`} style={{ width: w, height: m.h, marginLeft: -w / 2, marginTop: -m.h, transform: t3(m.x, m.bottom, m.z, `rotateY(${turn}deg)`) }}>
+        <LoopVideo {...modelClip(m.v)} active={active} />
+      </button>
+      {m.table ? (
+        <button className="m-table" onClick={onOpen} style={{ height: (m.tableH ?? TABLE_H) + 34, marginTop: -(m.tableH ?? TABLE_H) - 34, transform: t3(m.x, FLOOR, m.z + 55, `rotateY(${turn * 0.6}deg)`) }}>
+          <span className="m-stack">
+            {[0, 1, 2, 3, 4].map((k) => (
+              <i key={k} style={{ background: STACK[(k + m.v.length) % STACK.length], height: 7 + (k % 3) * 2, width: 66 - k * 3, marginLeft: (k % 2) * 6 }} />
+            ))}
+          </span>
+          <span className="m-stack r">
+            {[0, 1, 2, 3].map((k) => (
+              <i key={k} style={{ background: STACK[(k * 3 + m.v.length) % STACK.length], height: 8 + (k % 2) * 3, width: 60 - k * 2, marginLeft: (k % 2) * -5 }} />
+            ))}
+          </span>
+          <span className="m-table-top" />
+          <span className="m-table-front">
+            <b>{t(m.label)}</b>
+            <small>
+              {t(it.name)} · {taka(it.price)}
+            </small>
+          </span>
+        </button>
+      ) : (
+        <button className="m-sign" onClick={onOpen} style={{ transform: t3(m.x + (m.x < 0 ? -140 : 140), FLOOR, m.z + 30, `rotateY(${turn}deg)`) }}>
+          <b>{t(m.label)}</b>
+          <small>{t(it.name)}</small>
+          <em>{taka(it.price)}</em>
+        </button>
+      )}
+    </>
+  )
 }
 
 /** Real photos of stacked sarees, framed as glass-front wooden cabinets. */
@@ -118,7 +177,7 @@ function Wall({ side, onOpen }: { side: 'l' | 'r'; onOpen: (s: Saree) => void })
 }
 
 export function ShopWalk() {
-  const { t, lang, taka } = useLang()
+  const { t, lang } = useLang()
   const { openQuick } = useStore()
   const ref = useRef<HTMLElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] })
@@ -149,7 +208,7 @@ export function ShopWalk() {
   const [near, setNear] = useState<string>('front')
   useMotionValueEvent(camZ, 'change', (c) => {
     const max = window.innerWidth < 760 ? 2 : 4
-    const list = STANDS.map((st, k) => ({ v: st.v, d: standZ(k) + c }))
+    const list = MODELS.map((m) => ({ v: m.v, d: m.z + c }))
       .filter((x) => x.d > -1500 && x.d < 650)
       .sort((a, b) => b.d - a.d)
       .slice(0, max)
@@ -194,23 +253,10 @@ export function ShopWalk() {
               </div>
             ))}
 
-            {/* model display stands along the aisle, like showroom mannequins */}
-            {STANDS.map((st, k) => {
-              const it = byId(st.id)!
-              const left = k % 2 === 0
-              return (
-                <button key={st.v} className="w-stand" onClick={() => open(it)} data-cursor="view" style={{ transform: t3(left ? -330 : 330, FLOOR - 250, standZ(k), `rotateY(${left ? 34 : -34}deg)`) }} aria-label={st.label.en}>
-                  <span className="stand-frame">
-                    <LoopVideo name={st.v} active={on(st.v)} />
-                  </span>
-                  <span className="stand-tag">
-                    <b>{t(st.label)}</b>
-                    {t(it.name)} · {taka(it.price)}
-                  </span>
-                  <span className="stand-base" />
-                </button>
-              )
-            })}
+            {/* real people browsing and modelling sarees inside the shop */}
+            {MODELS.map((m) => (
+              <Person key={m.v} m={m} active={on(m.v)} onOpen={() => open(byId(m.id)!)} />
+            ))}
 
             {/* counter with a saree being unrolled */}
             <div className="w-counter" style={{ transform: t3(0, 190, -1950) }}>
@@ -258,7 +304,7 @@ export function ShopWalk() {
               </div>
               <div className="w-facade">
                 <div className="w-window">
-                  <LoopVideo name="shop1" active={on('front')} />
+                  <LoopVideo {...shopClip('shop1')} active={on('front')} />
                 </div>
                 <div className="w-door">
                   <motion.div className="w-door-glow" style={{ opacity: glowOp }} />
@@ -267,7 +313,7 @@ export function ShopWalk() {
                   </motion.div>
                 </div>
                 <div className="w-window">
-                  <LoopVideo name="shop2" active={on('front')} />
+                  <LoopVideo {...shopClip('shop2')} active={on('front')} />
                 </div>
               </div>
             </motion.div>
